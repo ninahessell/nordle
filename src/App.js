@@ -24,7 +24,8 @@ class App extends React.Component {
     return (
       <button value={val}
         onClick={() => this.clickKey(val)}
-        key={val}>
+        key={val}
+        className="keyboardLetter">
           {val}
       </button>
     )
@@ -37,6 +38,7 @@ class App extends React.Component {
     if (letter == 4) {
       row++;
       letter = 0;
+      this.checkWord();
     } else {
       letter++;
     }
@@ -45,6 +47,10 @@ class App extends React.Component {
       currentRow: row,
       currentLetter: letter
     })
+  }
+
+  checkWord() {
+    return;
   }
 
   renderKeysRow(row) {
