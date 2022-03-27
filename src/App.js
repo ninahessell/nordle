@@ -3,47 +3,67 @@ import './App.css';
 import React from 'react';
 var _ = require('lodash');
 
-class Keys extends React.Component {
-  render() {
-    return (
-      <span>
-        {this.props.value}
-      </span>
-    )
-  }
-}
+
+const keyboardLetters = [
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  ['Del', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Enter']
+];
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      letters: [
-        ['q', 'w', 'e', 'r', 't', 't', 'y', 'u', 'i', 'o', 'p'],
-        ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
-        ['z', 'x', 'c', 'v', 'b', 'n', 'm']
-      ]
+      letterBoard: new Array(6).fill(null).map(() => new Array(5).fill(' ')),
+      currentRow: 0,
+      currentLetter: 0
     }
   }
 
   renderKey(val) {
     return (
-      <Keys value={val}
-        onClick={this.clickKey}/>
+      <button value={val}
+        onClick={() => this.clickKey(val)}
+        key={val}>
+          {val}
+      </button>
     )
   }
 
-  clickKey() {
-    console.log('clicked');
+  clickKey(val) {
+    let newLetterBoard = this.state.letterBoard;
+    newLetterBoard[this.state.currentRow][this.state.currentLetter] = val;
+    let [row, letter] = [this.state.currentRow, this.state.currentLetter]
+    if (letter == 4) {
+      row++;
+      letter = 0;
+    } else {
+      letter++;
+    }
+    this.setState({
+      letterBoard: newLetterBoard,
+      currentRow: row,
+      currentLetter: letter
+    })
   }
 
   renderKeysRow(row) {
     let output = [];
-    for (let j = 0; j < this.state.letters[row].length; j++) {
-      output.push(`[${this.state.letters[row][j]}]`);
+    for (let j = 0; j < keyboardLetters[row].length; j++) {
+      output.push(`${keyboardLetters[row][j]}`);
     }
     return (
-      <div>
+      <div key={row}
+        >
         {output.map(item => this.renderKey(item))}
+      </div>
+    )
+  }
+
+  renderWordRow(rowNum) {
+    return (
+      <div className="nordleRow"  key={rowNum}>
+        {_.times(5, (i) => ( <div key={i} className="nordleLetter">{this.state.letterBoard[rowNum][i]} </div> ) )}
       </div>
     )
   }
@@ -53,8 +73,9 @@ class App extends React.Component {
       <div className="App">
         <header className="App-header">
           <h2>Nordle</h2>
-          <img src={logo} className="App-logo" alt="logo" />
         </header>
+        {_.times(6, (i) => this.renderWordRow(i))}
+        <br />
         {_.times(3, (i) => this.renderKeysRow(i))}
       </div>
     );
