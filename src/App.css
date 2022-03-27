@@ -36,11 +36,18 @@ body {
   margin: 1px;
   font-size: 20px;
   border: none;
-  border-radius: 3px;
-  background-color: #6d6967;
+  border-radius: 20px;
+  background-color: lightcoral;
   color: white;
   font-family: 'Poppins', sans-serif;
   font-weight: 300;
+  text-transform: capitalize;
+}
+
+@media only screen and (min-width: 780px)  {
+  .keyboardLetter {
+      min-width: 38px;
+    }
 }
 
 .App-header {
