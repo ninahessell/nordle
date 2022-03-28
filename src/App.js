@@ -23,6 +23,10 @@ class LetterSquare extends React.Component {
   }
 }
 
+const invalidWordAlert = () => {
+  alert('Thats not a word!')
+}
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -53,16 +57,12 @@ class App extends React.Component {
     if (val == 'Enter') {
       return this.checkWord(this.state.currentRow);
     };
-    let newLetterBoard = this.state.letterBoard;
-    let [color, row, letter] = [this.state.colorOfBoard, this.state.currentRow, this.state.currentLetter]
-
+    let [newLetterBoard, row, letter] = [this.state.letterBoard, this.state.currentRow, this.state.currentLetter]
     if (letter < 5) {
       newLetterBoard[row][letter] = val;
       letter++;
       this.setState({
         letterBoard: newLetterBoard,
-        colorOfBoard: color,
-        currentRow: row,
         currentLetter: letter
       })
     }
@@ -75,7 +75,7 @@ class App extends React.Component {
     }
     currentLetter--;
     letterBoard[currentRow][currentLetter] = '';
-    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter})
+    this.setState({letterBoard, currentLetter})
   }
 
   checkWord(row) {
@@ -84,17 +84,14 @@ class App extends React.Component {
     this.state.letterBoard[row].map((i) => word += i);
     console.log(word)
     if (words.indexOf(word) > -1) {
-      // it's a word! add some gray, yellow, and green
       // to do: check an actual api/full word list if it's a real word
       this.letterCheck(word);
     } else {
-      // it's not a word... clear the row or do nothing!
-      console.error('not a word');
+      return invalidWordAlert();
     }
-    let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
-    currentLetter = 0;
+    let currentRow = this.state.currentRow;
     currentRow++;
-    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter});
+    this.setState({currentRow, currentLetter: 0});
   }
 
   renderKeysRow(row) {
@@ -112,7 +109,7 @@ class App extends React.Component {
 
   letterCheck(word) {
     let row = this.state.letterBoard[this.state.currentRow];
-    let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
+    let colorOfBoard = this.state.colorOfBoard;
     let rowColors = [];
     row.map((letter, i) => {
       if (letter === todaysWord.charAt(i)) {
@@ -124,8 +121,12 @@ class App extends React.Component {
         rowColors.push('gray');
       }
     })
-    colorOfBoard[currentRow] = rowColors;
-    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter});
+    colorOfBoard[this.state.currentRow] = rowColors;
+    this.setState({colorOfBoard});
+    if (rowColors.every((val) => val === 'green')) {
+      alert('you win!!!');
+      // to do: prevent user from continuing to add letters
+    }
   }
 
   renderWordRow(rowNum) {
@@ -146,14 +147,22 @@ class App extends React.Component {
     if (event.key === "Backspace") {
       return this.handleDelete();
     }
-    if ((event.key).match('[a-zA-Z]')) {
+    if ((event.key).match('[a-zA-Z]') && event.key.length == 1) {
       this.selectKey(event.key);
     }
   }
 
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown);
+  }
+
   render() {
     return (
-      <div className="App" onKeyDown={this.handleKeyDown}>
+      <div className="App">
         <header className="App-header">
           <h2>Nordle</h2>
         </header>
