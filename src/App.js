@@ -11,11 +11,24 @@ const keyboardLetters = [
   ['Del', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Enter']
 ];
 
+const todaysWord = 'sight';
+
+class LetterSquare extends React.Component {
+  render() {
+    return (
+      <div className={"nordleLetter" + (this.props.color ? ` ${this.props.color}-color` : '') } >
+        {this.props.val}
+      </div>
+    )
+  }
+}
+
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       letterBoard: new Array(6).fill(null).map(() => new Array(5).fill('')),
+      colorOfBoard: new Array(6).fill(null).map(() => new Array(5).fill('')),
       currentRow: 0,
       currentLetter: 0
     }
@@ -24,7 +37,7 @@ class App extends React.Component {
   renderKey(val) {
     return (
       <button value={val}
-        onClick={() => this.clickKey(val)}
+        onClick={() => this.selectKey(val)}
         key={val}
         className="keyboardLetter">
           {val}
@@ -32,7 +45,7 @@ class App extends React.Component {
     )
   }
 
-  clickKey(val) {
+  selectKey(val) {
     if (val == 'Del') {
       return this.handleDelete();
     }
@@ -41,13 +54,14 @@ class App extends React.Component {
       return this.checkWord(this.state.currentRow);
     };
     let newLetterBoard = this.state.letterBoard;
-    let [row, letter] = [this.state.currentRow, this.state.currentLetter]
-    newLetterBoard[row][letter] = val;
+    let [color, row, letter] = [this.state.colorOfBoard, this.state.currentRow, this.state.currentLetter]
 
     if (letter < 5) {
+      newLetterBoard[row][letter] = val;
       letter++;
       this.setState({
         letterBoard: newLetterBoard,
+        colorOfBoard: color,
         currentRow: row,
         currentLetter: letter
       })
@@ -55,13 +69,13 @@ class App extends React.Component {
   }
 
   handleDelete() {
-    let {letterBoard, currentRow, currentLetter} = this.state;
+    let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
     if (currentLetter == 0) {
       return
     }
     currentLetter--;
     letterBoard[currentRow][currentLetter] = '';
-    this.setState({letterBoard, currentRow, currentLetter})
+    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter})
   }
 
   checkWord(row) {
@@ -72,16 +86,15 @@ class App extends React.Component {
     if (words.indexOf(word) > -1) {
       // it's a word! add some gray, yellow, and green
       // to do: check an actual api/full word list if it's a real word
-      console.log('its a word!')
-      let letterBoard = this.state.letterBoard;
+      this.letterCheck(word);
     } else {
       // it's not a word... clear the row or do nothing!
       console.error('not a word');
     }
-    let {letterBoard, currentRow, currentLetter} = this.state;
+    let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
     currentLetter = 0;
     currentRow++;
-    this.setState({letterBoard, currentRow, currentLetter});
+    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter});
   }
 
   renderKeysRow(row) {
@@ -97,15 +110,35 @@ class App extends React.Component {
     )
   }
 
+  letterCheck(word) {
+    let row = this.state.letterBoard[this.state.currentRow];
+    let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
+    let rowColors = [];
+    row.map((letter, i) => {
+      if (letter === todaysWord.charAt(i)) {
+        console.log(letter);
+        rowColors.push('green');
+      } else if (todaysWord.indexOf(letter) !== -1) {
+        rowColors.push('yellow');
+      } else {
+        rowColors.push('gray');
+      }
+    })
+    colorOfBoard[currentRow] = rowColors;
+    this.setState({letterBoard, colorOfBoard, currentRow, currentLetter});
+  }
+
   renderWordRow(rowNum) {
     return (
       <div className="nordleRow"  key={rowNum}>
-        {_.times(5, (i) => ( <div key={i} className="nordleLetter">{this.state.letterBoard[rowNum][i]} </div> ) )}
+        {_.times(5, (i) => (
+          <LetterSquare key={i} val={this.state.letterBoard[rowNum][i]} color={this.state.colorOfBoard[rowNum][i]}/>
+        ))}
       </div>
     )
   }
 
-  handleKeyPress = (event) => {
+  handleKeyDown = (event) => {
     event.preventDefault();
     if (event.key === 'Enter'){
      return this.checkWord(this.state.currentRow);
@@ -114,13 +147,13 @@ class App extends React.Component {
       return this.handleDelete();
     }
     if ((event.key).match('[a-zA-Z]')) {
-      this.clickKey(event.key);
+      this.selectKey(event.key);
     }
   }
 
   render() {
     return (
-      <div className="App" onKeyDown={this.handleKeyPress}>
+      <div className="App" onKeyDown={this.handleKeyDown}>
         <header className="App-header">
           <h2>Nordle</h2>
         </header>
