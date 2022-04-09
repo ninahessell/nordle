@@ -1,9 +1,7 @@
-import logo from './logo.svg';
 import './App.css';
-import { words } from './words.js';
 import React from 'react';
+import { words} from './words.js';
 var _ = require('lodash');
-
 
 const keyboardLetters = [
   ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -11,20 +9,35 @@ const keyboardLetters = [
   ['Del', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'Enter']
 ];
 
-const todaysWord = 'sight';
+let todaysWord = 'sight';
+todaysWord = words[Math.floor(Math.random()*words.length)];
 
 class LetterSquare extends React.Component {
   render() {
     return (
-      <div className={"nordleLetter" + (this.props.color ? ` ${this.props.color}-color` : '') } >
+      <div className={"nordleLetter" + (this.props.color ? ` ${this.props.color}-color` : '') }>
         {this.props.val}
       </div>
     )
   }
 }
 
-const invalidWordAlert = () => {
-  alert('Thats not a word!')
+class Message extends React.Component {
+  render() {
+    return (
+      <div className={this.props.className}>{this.props.message}</div>
+    )
+  }
+}
+
+class Header extends React.Component {
+  render() {
+    return (
+      <header className={this.props.className}>
+        <h2>Nordle</h2>
+      </header>
+    )
+  }
 }
 
 class App extends React.Component {
@@ -34,10 +47,20 @@ class App extends React.Component {
       letterBoard: new Array(6).fill(null).map(() => new Array(5).fill('')),
       colorOfBoard: new Array(6).fill(null).map(() => new Array(5).fill('')),
       currentRow: 0,
-      currentLetter: 0
+      currentLetter: 0,
+      message: '',
+      todaysWord: todaysWord
     }
+    this.invalidWordAlert = this.invalidWordAlert.bind(this);
   }
 
+  invalidWordAlert() {
+    this.setState({message: 'Hmm, looks like that\'s not in our word list'});
+    setInterval(() => {
+      this.setState({message: ''})
+    }, 500)
+  }
+  
   renderKey(val) {
     return (
       <button value={val}
@@ -50,13 +73,12 @@ class App extends React.Component {
   }
 
   selectKey(val) {
-    if (val == 'Del') {
+    if (val === 'Del') {
       return this.handleDelete();
     }
-
-    if (val == 'Enter') {
+    if (val === 'Enter') {
       return this.checkWord(this.state.currentRow);
-    };
+    }
     let [newLetterBoard, row, letter] = [this.state.letterBoard, this.state.currentRow, this.state.currentLetter]
     if (letter < 5) {
       newLetterBoard[row][letter] = val;
@@ -70,7 +92,7 @@ class App extends React.Component {
 
   handleDelete() {
     let {letterBoard, colorOfBoard, currentRow, currentLetter} = this.state;
-    if (currentLetter == 0) {
+    if (currentLetter === 0) {
       return
     }
     currentLetter--;
@@ -84,10 +106,9 @@ class App extends React.Component {
     this.state.letterBoard[row].map((i) => word += i);
     console.log(word)
     if (words.indexOf(word) > -1) {
-      // to do: check an actual api/full word list if it's a real word
       this.letterCheck(word);
     } else {
-      return invalidWordAlert();
+      return this.invalidWordAlert();
     }
     let currentRow = this.state.currentRow;
     currentRow++;
@@ -124,8 +145,7 @@ class App extends React.Component {
     colorOfBoard[this.state.currentRow] = rowColors;
     this.setState({colorOfBoard});
     if (rowColors.every((val) => val === 'green')) {
-      alert('you win!!!');
-      // to do: prevent user from continuing to add letters
+      this.setState({message: 'You Win!'});
     }
   }
 
@@ -147,13 +167,14 @@ class App extends React.Component {
     if (event.key === "Backspace") {
       return this.handleDelete();
     }
-    if ((event.key).match('[a-zA-Z]') && event.key.length == 1) {
+    if ((event.key).match('[a-zA-Z]') && event.key.length === 1) {
       this.selectKey(event.key);
     }
   }
 
   componentDidMount() {
     document.addEventListener("keydown", this.handleKeyDown);
+    // get random word
   }
 
   componentWillUnmount() {
@@ -161,17 +182,31 @@ class App extends React.Component {
   }
 
   render() {
+
+    const messageDisplay = this.state.message.length > 0 ? '-display' : '';
+
     return (
       <div className="App">
-        <header className="App-header">
-          <h2>Nordle</h2>
-        </header>
+        <Header className="App-header"/>
         {_.times(6, (i) => this.renderWordRow(i))}
         <br />
         {_.times(3, (i) => this.renderKeysRow(i))}
+        <Message className={`message${messageDisplay}`} message={this.state.message}/>
       </div>
     );
   }
 }
 
 export default App;
+
+/* 
+
+TO DO:
+- Add 'not a word' animation
+- Sharing functionality (messages)
+
+VARIATIONS:
+- make live comparing possible, rooms?
+- four letter words
+
+*/

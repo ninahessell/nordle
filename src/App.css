@@ -37,7 +37,7 @@ body {
   font-size: 20px;
   border: none;
   border-radius: 20px;
-  background-color: lightcoral;
+  background-color: #737271;
   color: white;
   font-family: 'Poppins', sans-serif;
   font-weight: 300;
@@ -75,4 +75,22 @@ body {
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
+}
+
+.message, .message-display {
+  background-color: white;
+  color: #737271;
+  padding: 12px 20px;
+  position: absolute;
+  top: 120px;
+  border-radius: 5px;
+  font-weight: bold;
+  margin: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+}
+
+.message-display {
+  display: block
 }
